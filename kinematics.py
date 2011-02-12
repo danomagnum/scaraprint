@@ -4,8 +4,10 @@ import serial
 from vector2 import Vector
 from decimal import *
 getcontext().prec = 8
+XOFFSET = 200
+YOFFSET = 200
 
-ser = serial.Serial(0,9600,timeout=0,parity=serial.PARITY_NONE,rtscts=1)
+ser = serial.Serial('/dev/ttyUSB0',9600,timeout=0,parity=serial.PARITY_NONE)
 #example: ser.write(serial.to_bytes((255,0,100))) where 255 is always 255, 0 is the servo number, and 100 is the servo position, scaled from 0-254
 
 class linkage:
@@ -50,23 +52,32 @@ class linkage:
 	def move(self,x,y,steps=1,stepdelay=1):
 		'''splits a move up into intermediate points
 		this results in a straighter line from the current point to x,y'''
+		y += YOFFSET
+		x += XOFFSET
+		y = -y #get in the right plane
 		steps = Decimal(steps)
 		dx = (x - self.x)/steps
 		dy = (y - self.y)/steps
 		step = 1
 		while step <= steps:
 			self.set_inverse(self.x + dx,self.y + dy)
-			print 'moved to', self.x,self.y, 'angles are', self.degrees()
+			print 'moved to', self.truex(),self.truey(), 'angles are', self.degrees()
 			self.apply_xy()
-			time.sleep(stepdelay) #stepdelay should probably end up being a function of dx and dy
+			#time.sleep(stepdelay) #stepdelay should probably end up being a function of dx and dy
 			step += 1
+	def truex(self):
+		return self.x - XOFFSET
+	def truey(self):
+		return self.y + YOFFSET
 
 	def apply_xy(self):
 		'''this invokes the serial communication to the servos
 		which causes them to move to the position of this class model'''
 		p1 = self.theta1 #p1 and p2 are the scaled values for servo position from 0-254 instead of -90 to 90 or whatever
 		p2 = self.theta2
+		p1,p2 = translate(p1,-p2)
 		ser.write(serial.to_bytes((255,0,p1))) #write x
+		time.sleep(.1)
 		ser.write(serial.to_bytes((255,1,p2))) #write y
 		pass
 
@@ -75,3 +86,21 @@ class linkage:
 		p3 = self.z
 		ser.write(serial.to_bytes((255,2,p3))) #write z
 
+def translate(theta1,theta2):
+	mid = int(254/2)
+	mult = 3
+	div = 5
+	#mapping:
+	right90=70
+	zero=127
+	left90=180
+	#end mapping
+
+	deg1 = theta1 *180/math.pi
+	deg1 = 127 + 54*deg1/90
+	deg1 -= 3
+	deg2 = theta2 *180/math.pi
+	deg2 = 127 + 54*deg2/90
+	deg2 += 12
+
+	return (int(deg1),int(deg2))

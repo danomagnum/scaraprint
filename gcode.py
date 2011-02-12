@@ -4,7 +4,7 @@ import decimal
 decimal.getcontext().prec = 8
 Dec = decimal.Decimal
 
-arm = kinematics.linkage(100,100)
+arm = kinematics.linkage(216,187)
 
 gcfile = open('test.gcode')
 
