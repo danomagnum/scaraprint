@@ -4,7 +4,9 @@ import decimal
 decimal.getcontext().prec = 8
 Dec = decimal.Decimal
 
-arm = kinematics.linkage(216,187)
+L1 = 198
+L2 = 180
+arm = kinematics.linkage(L1,L2)
 
 gcfile = open('test.gcode')
 
@@ -14,6 +16,7 @@ for line in gcfile:
 	items = line.split()
 	code = items[0]
 	if code == 'G1': #move command
+		print 'g1 code'
 		x = Dec(items[1].lstrip('X'))
 		y = Dec(items[2].lstrip('Y'))
 		z = Dec(items[3].lstrip('Z'))
@@ -42,5 +45,6 @@ for line in gcfile:
 		s = Dec(items[1].lstrip('S'))
 		print 'set extruder speed to', s
 
-	time.sleep(.1)
+	print 'sleeping'
+	time.sleep(1)
 

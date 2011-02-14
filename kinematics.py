@@ -6,6 +6,8 @@ from decimal import *
 getcontext().prec = 8
 XOFFSET = 200
 YOFFSET = 200
+L1 = 198
+L2 = 180
 
 ser = serial.Serial('/dev/ttyUSB0',9600,timeout=0,parity=serial.PARITY_NONE)
 #example: ser.write(serial.to_bytes((255,0,100))) where 255 is always 255, 0 is the servo number, and 100 is the servo position, scaled from 0-254
